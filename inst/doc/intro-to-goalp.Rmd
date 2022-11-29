@@ -1,0 +1,430 @@
+---
+title: "Introduction to goalp"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction to goalp}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## About goalp
+
+`goalp` is an R package for linear goal programming. It allows solving basic, 
+weighted, and lexicographic linear goal programming problems, as well as a 
+mixture of the weighted and lexicographic approaches. The package accepts 
+a human-readable representation of the problem, and it automatically sets up 
+the corresponding linear programming problem, which it later solves using the 
+[lp_solve](https://lpsolve.sourceforge.net) linear solver, through its R 
+interface [lpSolve](https://cran.r-project.org/package=lpSolve). The 
+implementation of goal programming is based on the notation and approach 
+described in Ignizio (1983).
+
+## Basic goal programming in `goalp`
+
+Imagine you want to grow some vegetables and herbs in your garden. You can grow 
+aubergine (A), broccoli (B), carrots (C), dill (D) or endive (E). Each 
+vegetable requires a certain amount of land to grow per seedling you plant, as 
+well as a certain amount of water and fertilizer. After a bit of research, you 
+find out that each seedling of each vegetable needs the following amount of 
+resources to grow.
+
+|   |Aubergine|Broccoli|Carrot|Dill|Endive|
+|:--|:-------:|:------:|:----:|:--:|:----:|
+|Land|60|30|20|10|20|
+|Water|0.8|0.2|0.3|0.1|0.3|
+|Fertiliser|30|20|10|5|20|
+
+Where land is expressed in cm of a planting line, water in litres per week, and 
+fertiliser in grams per season. These values are only meant as an example, and 
+do not reflect real needs of these plants.
+
+Now imagine you have prepared the land already, and you have 3,000 cm of 
+planting line available, you have 50 litres of water available during a week, 
+and you have bought 2,000 grams of fertiliser.
+
+You would like to decide how much to plant of each vegetable in such a way that 
+your land, water, and fertiliser consumption is as close as possible to your 
+available resources. You can go a bit above or below each amount, as you 
+can always extend the planting lines, get additional water from other sources, 
+or buy extra fertiliser, or leave any amount of them unused. But you would like 
+to minimise additional work or expenditure, as well as avoid any waste. 
+How can you decide, then, what to plant while consuming as close as possible 
+to the available resources?
+
+Goal programming can help us when we have multiple restrictions (land, water 
+and fertiliser in our example) from which we want to deviate as little as 
+possible. To formulate our vegetable patch problem as a goal programming 
+problem, we must first write our constraints, which we will call *goals*, 
+as the following set of equations.
+
+$$60A + 30B + 20C + 10D + 20E = 3000$$
+$$0.8A + 0.2B + 0.3C + 0.1D + 0.3E = 50$$
+$$30A + 20B + 10C + 5D + 20E = 2000$$
+
+Additional to the goals listed above, we assume all *decision variables* 
+(A, B, C, D, E) to be non-negative. This is an implicit constraints that will 
+be included in all goal programming problems in goalp.
+
+We are unlikely to find a solution that satisfies all goals perfectly, so 
+we allow for *negative and positive deviations* in each goal. For a given 
+possible solution (i.e. a set of values for the decision variable), the 
+negative deviation measures by how much the left-hand side of the goal is 
+lacking to reach the right-hand side. The positive deviation, on the other 
+hand, measures by how much the left-hand side of the equation is above or in 
+excess of the right-hand side. The deviations are always expressed as 
+non-negative values.
+
+For example, if we were to plant two dozens of each vegetable, i.e. $A=B=C=D=E=24$, 
+then the left hand side of the "land" goal would have a value of 
+$60*24 + 30*24 + 20*24 + 10*24 +20*24 = 3360$, which means our positive 
+deviation would be equal to $d_{land+}=3360-3000=360$, because we have an 
+excess of 360 units on our left hand side, above our goal. On the other hand, 
+if we evaluate the left-hand side of our water goal, we find it has a value of 
+$0.8*24 + 0.2*24 + 0.3*24 + 0.1*24 + 0.3*24 = 40.8$, meaning we are lacking 
+9.2 units to reach our goal, in other words $d_{water-}=50 - 40.8 = 9.2$.
+
+Finding values for A, B, C, D, and E that keep us as close as possible to 
+our goals is equivalent to minimising the sum of all deviations. Therefore, we 
+just need to solve the following linear programming problem:
+
+$$Min_{A, B, C, D, E, d_{i-}, d_{i+}} \sum_{i\in \{ land, water, fertiliser\} } d_{i-} + d_{i+}$$
+Subject to the following set of constraints:
+$$60A + 30B + 20C + 10D + 20E + d_{land-} - d_{land+}= 3000$$
+$$0.8A + 0.2B + 0.3C + 0.1D + 0.3E + d_{water-} - d_{water+} = 50$$
+$$30A + 20B + 10C + 5D + 20E + d_{fertiliser-} - d_{fertiliser+}  = 2000$$
+We can solve this problem using `goalp`. To do it, we simply need to follow 
+four simply steps.
+
+1. Load the `goalp` package if it is not loaded already.
+2. Write our goals in a text variable, one goal per line.
+3. Call the `goalp` function with our goals as an argument.
+4. Use `summary` on our results to see them on the screen.
+
+The process is exemplified in the following code snippet.
+```{r basic equal only}
+# Load library
+library(goalp)
+
+# Write goals to a text variable
+goals <- "Land :      60*A + 30*B + 20*C + 10*D + 20*E = 3000
+          Water:      .8*A + .2*B + .3*C + .1*D + .3*E = 50
+          Fertiliser: 30*A + 20*B + 10*C +  5*D + 20*E = 2000"
+          
+# Solve problem
+gp <- goalp(goals)
+
+# Print results to screen
+summary(gp)
+```
+
+We observe that the solution is $A=0, B=0, C=100, D=0, E=50$, i.e. planting 
+100 carrots and 50 endives. The summary also reports the value of the 
+deviations, with $d_{water-}=5$, meaning our solution wastes 5 litres of water 
+(i.e. it only uses 45 litres).
+
+A few things to note when using `goalp`:
+
+- Names can be assigned to each goal, they should be written at the start of the line and separated from the goal by a colon.
+- Deviations must not be included in the goals, these are added automatically by `goalp`.
+- Goals must be written as regular R expressions, for example `"2*x + 3*y = 10"` is a valid goal, but `"2x + 3y = 10"` is not.
+
+Now imagine the fertiliser has a very long shelf life, so we do not care about 
+using less of it, as we can always use whatever is left during the next season. 
+In formal terms, this means that we are not interested in the minimising 
+$d_{fertiliser-}$, or alternatively, that our fertiliser goal can be rewritten 
+as follows.
+
+$$30A + 20B + 10C + 5D + 20E <= 2000$$
+At the same time, imagine we really enjoy working in our plot of land, so we 
+do not care about having to prepare more land for planting. In formal terms, 
+this means that we are not interested in minimising $d_{land+}$, or 
+alternatively, that our land goal can be rewritten as follows.
+
+$$60A + 30B + 20C + 10D + 20E >= 3000$$
+
+We can solve the new problem using `goalp` using the following code.
+
+```{r basic inequal}
+# Load library
+library(goalp)
+
+# Write goals to a text variable
+goals <- "Land :      60*A + 30*B + 20*C + 10*D + 20*E >= 3000
+          Water:      .8*A + .2*B + .3*C + .1*D + .3*E = 50
+          Fertiliser: 30*A + 20*B + 10*C +  5*D + 20*E <= 2000"
+          
+# Solve problem
+gp <- goalp(goals)
+
+# Print results to screen
+summary(gp)
+```
+
+The solution now changes, with the optimal now being planting 25 broccoli and 
+150 carrots. This new solution requires preparing 750 additional cm of land 
+(7.5 metres) for planting, but consumes all available water and fertiliser.
+
+Now imagine we enjoy variety in our diet, so we would like to to produce at 
+least 10 aubergines and 10 broccoli. While we like carrots, we do not want too 
+many of them, so we would like to plant only between 10 and 20. Dill, on the 
+other hand, we definitely do not need more than 5. We can add these ranges to 
+the formulation of our problem. 
+
+To add lower, upper and both kinds of bounds to the decision variables in our 
+problem, we use the key words `lBound`, `uBound`, and `range` respectively. 
+Note that these are hard constraints, as no deviations are allowed for them.
+
+```{r basic bounds}
+# Load library
+library(goalp)
+
+# Write goals to a text variable
+goals <- "Land :      60*A + 30*B + 20*C + 10*D + 20*E >= 3000
+          Water:      .8*A + .2*B + .3*C + .1*D + .3*E = 50
+          Fertiliser: 30*A + 20*B + 10*C +  5*D + 20*E <= 2000
+          A lBound 10
+          B lBound 10
+          C range [10,20]
+          D uBound 5"
+          
+# Solve problem
+gp <- goalp(goals)
+
+# Print results to screen
+summary(gp)
+```
+
+The optimal solution is now planting 52 aubergines, 12 broccoli and 20 carrots. 
+Note that this solution satisfy all bounds imposed on the problem. It also 
+implies preparing 8.80 additional metres of land for planting.
+
+Lower boundaries have the negative deviation $d_{i-}$ set to `NA`, while upper 
+boundaries have the positive deviation $d_{i+}$ set to `NA`. This is because 
+lower boundaries do not allow negative deviations, as the variable must be 
+equal or bigger than the lower boundary. Similarly, upper bounds do not allow 
+for positive deviations, therefore their values are shown as `NA`.
+
+Note that, unlike goals, names cannot be assigned to bounds.
+
+
+## Weighted goal programming
+
+So far, we have given the same weight to all deviations. For example, lacking 
+1 cm of land was just as bad as using one litre more or less than 50 litres.
+Very often, this is not the case. Continuing with the example, deviating by one 
+litre of water is probably more important than deviating by 1 cm of land.
+
+To address this disparity, we can weight the deviations in the objective 
+function differently for each goal. For example, we could say that what matters 
+are the deviations in terms of percentage, so deviating by 30 cm (1% of 3000 cm)
+is just as important as deviating by 0.5 litres (1% of 50 litres), or 20 grams 
+of fertiliser (1% of 2000 grams). To do this, we need to assign weights to each 
+deviation. We can do this easily in `goalp`, as follows.
+
+```{r weights per goal}
+# Load library
+library(goalp)
+
+# Write goals to a text variable
+goals <- "Land :      60*A + 30*B + 20*C + 10*D + 20*E >= 3000 | 1/3000
+          Water:      .8*A + .2*B + .3*C + .1*D + .3*E = 50    | 1/50
+          Fertiliser: 30*A + 20*B + 10*C +  5*D + 20*E <= 2000 | 1/2000
+          A lBound 10
+          B lBound 10
+          C range [10,20]
+          D uBound 5"
+          
+# Solve problem
+gp <- goalp(goals)
+
+# Print results to screen
+summary(gp)
+```
+
+Changing the weights of each deviation leads to a different optimal solution, 
+this time the solution being 52 aubergines, 10 broccoli, 20 carrots, and 4 dill.
+
+The printed solution shows the weight of each deviation next to the 
+value of each deviation, under the columns `w-` and `w+` for the weights of the 
+negative and positive deviations, respectively.
+
+Note that goals expressed as equalities (`=`) have weights different from zero
+for both the negative ($d_{i-}$) and positive deviations ($d_{i+}$). Goals 
+expressed as "bigger than" inequalities (`>=`) have the weight of $d_{i+}$ 
+automatically set to zero, as going over the goal is not penalised. Goals 
+expressed as "smaller than" inequalities (`<=`) have the weight of $d_{i-}$ 
+automatically set to zero, as being under the goal is not penalised.
+
+The same effect could be achieved by setting the `normW` options to `TRUE` when 
+calling `goalp`, i.e. `goalp(goal, normW=TRUE)`. The option `normW` stands for 
+"normalised weights". It automatically defines weights as the inverse of the 
+right-hand side of each goal.
+
+Note that bounds do not accept the use of weights.
+
+Now imagine that not only we want to reduce deviations from our ideal water 
+usage of 50 litres, but also it is more onerous for us to exceed 50 litres, 
+than it is to use less than that. For example, it could be that additional 
+water has to be fetched from a distant tap, so it requires a significant 
+effort, while using less water is of little annoyance.
+
+We can take this into consideration by defining different weights for the 
+negative and positive deviations for the "water" goal. We do this by defining 
+two weights for the goal, **first the negative deviation weight, followed by 
+the weight of the positive deviation**, as shown in the example below.
+
+```{r weights per deviation}
+# Load library
+library(goalp)
+
+# Write goals to a text variable
+goals <- "Land :      60*A + 30*B + 20*C + 10*D + 20*E >= 3000 | 1/3000
+          Water:      .8*A + .2*B + .3*C + .1*D + .3*E = 50    | 1/50   10/50
+          Fertiliser: 30*A + 20*B + 10*C +  5*D + 20*E <= 2000 | 1/2000
+          A lBound 10
+          B lBound 10
+          C range [10,20]
+          D uBound 5"
+          
+# Solve problem
+gp <- goalp(goals)
+
+# Print results to screen
+summary(gp)
+```
+
+In this case the result does not change, as the previous solution had negative 
+and positive deviations equal to zero for the water goal. Nevertheless, we 
+can see that the weights reported in the `w-` and `w+` columns are different 
+for the water goal.
+
+A more concise way to define the previous problem would have been the 
+following. As we use the `normW=TRUE` option, the scaling of weights by the 
+inverse of the righ-hand side value of each goal is automatic.
+
+```{r eval=FALSE}
+# Load library
+library(goalp)
+
+# Write goals to a text variable
+goals <- "Land :      60*A + 30*B + 20*C + 10*D + 20*E >= 3000
+          Water:      .8*A + .2*B + .3*C + .1*D + .3*E  = 50   | 1 10
+          Fertiliser: 30*A + 20*B + 10*C +  5*D + 20*E <= 2000
+          A lBound 10
+          B lBound 10
+          C range [10,20]
+          D uBound 5"
+          
+# Solve problem
+gp <- goalp(goals, normW=TRUE)
+
+# Print results to screen
+summary(gp)
+```
+
+
+## Lexicographic goal programming
+
+Now imagine that we are more interested in using all of our available land, 
+than in fulfilling our water and fertiliser goals. For example, it could be 
+that all the land we do not use is assigned to other people in the next harvest 
+season. When one or more goals are more important than others, we use 
+lexicographic goal programming.
+
+Lexicographic goal programming requires solving the problem multiple times, 
+but considering only some deviation in each occasion. The idea idea is that 
+we first optimise for the most important goal (or deviation), we fix those 
+deviations to the best we found, and then we optimise again considering only 
+the next most important deviation, and so on and so forth.
+
+For example, let's say our first priority is using at least 3000 cm of land, in 
+other words, we want to minimise $d_{land-}$, so we assign it a priority of 1. 
+Our next priority is avoiding to use more than 50 litres of water, so we assign 
+$d_{water+}$ a priority of 2. Then we care the same about all remaining 
+deviations, so we assign priority 3 to each of them. We communicate this 
+priority to `goalp` using the following syntax.
+
+```{r lexicographic}
+# Load library
+library(goalp)
+
+# Write goals to a text variable
+goals <- "Land :      60*A + 30*B + 20*C + 10*D + 20*E >= 3000 | 1#
+          Water:      .8*A + .2*B + .3*C + .1*D + .3*E = 50    | 3# 2#
+          Fertiliser: 30*A + 20*B + 10*C +  5*D + 20*E <= 2000 | 3#
+          A lBound 10
+          B lBound 10
+          C range [10,20]
+          D uBound 5"
+          
+# Solve problem
+gp <- goalp(goals)
+
+# Print results to screen
+summary(gp)
+```
+
+The solution has now changed slightly to 52 aubergines, 12 broccoli, and 
+20 carrots. As the previous solution already did not use less than 2000 cm 
+of land the solution was not expected to change drastically. When we run 
+`goalp`, we see that three sub-problems are solved, one for each level of 
+priority.
+
+Note that, unlike weights, the syntax for priority includes a hashtag (`#`).
+
+It is also possible to combine lexicographic priorities and weights. But then 
+the weights will be relevant only within the same level of priority. We could, 
+for example, obtain sligtly different results if we instead run 
+`goalp(goals, normW=TRUE)`.
+
+When printing the results, the lexicographic priority of each deviation is 
+shown next to its weights, in columns `p-` and `p+` in the table at the 
+bottom of the summary.
+
+## Extensions
+
+`goalp` by default assumes that all decision variables are integers. But they 
+can also be defined as *continuous* (non-negative real numbers) or *binary* 
+(variables that can only take values 0 or 1). The typre of each variable can 
+be specified through the `varType` option when calling `goalp`, for example 
+`goalp(goals, varType=c(x="cont", y="int", z="bin"))`, where `x`, `y` and `z` 
+are the names of the decision variables.
+
+`goalp` allows for enforced equality constraints using the `==` symbol. This 
+will turn a goal into an effective constraint. Note that this increases the 
+chances of the solver not finding a solution for the underlying linear 
+optimisation problem.
+
+goalp` also allows for enforcing of constraints by setting goal's weights
+equal to `NA`. If a weight is set to `NA`, then the corresponding deviation is 
+removed from the underlying linear optimisation problem. This is specially 
+useful in the case of enforcing inequalities. For example, to enforce 
+$x + y >= 5$:
+
+```{r eval=FALSE}
+goals <- "g1: 3*x + 2*y + z  = 20 
+          g2:   x +   y     >= 5  | NA"
+gp <- goalp(goals)
+summary(gp)
+```
+
+Besides the text syntax describing a goal programming problem, `goalp` also 
+allows defining a problem using matrices. This is specially useful in the case 
+of large problems. The problem is expressed in the form `Ax = b`, with the user 
+having to provide the coefficient matrix `A`, with as many rows as goals and 
+columns as decision variables, the vector `b`, with the right-hand side values 
+of the goals, and an additional character vector `m` indicating if each goal 
+relates the left- and right-hand sides using `"="`, `">="`, `"<="`, `"=="`,
+`"lBound"`, or `"uBound"`. Type `?goalp` in the console for more details.
+
+## References
+
+Ignizio, J.P (1983) Generalized goal programming: An overview. *Computers and 
+Operations Research* **10**, 277-289. [doi](https://doi.org/10.1016/0305-0548(83)90003-5)

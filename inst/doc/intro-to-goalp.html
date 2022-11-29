@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Introduction to goalp</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Introduction to goalp</h1>
+
+
+
+<div id="about-goalp" class="section level2">
+<h2>About goalp</h2>
+<p><code>goalp</code> is an R package for linear goal programming. It
+allows solving basic, weighted, and lexicographic linear goal
+programming problems, as well as a mixture of the weighted and
+lexicographic approaches. The package accepts a human-readable
+representation of the problem, and it automatically sets up the
+corresponding linear programming problem, which it later solves using
+the <a href="https://lpsolve.sourceforge.net">lp_solve</a> linear
+solver, through its R interface <a href="https://cran.r-project.org/package=lpSolve">lpSolve</a>. The
+implementation of goal programming is based on the notation and approach
+described in Ignizio (1983).</p>
+</div>
+<div id="basic-goal-programming-in-goalp" class="section level2">
+<h2>Basic goal programming in <code>goalp</code></h2>
+<p>Imagine you want to grow some vegetables and herbs in your garden.
+You can grow aubergine (A), broccoli (B), carrots (C), dill (D) or
+endive (E). Each vegetable requires a certain amount of land to grow per
+seedling you plant, as well as a certain amount of water and fertilizer.
+After a bit of research, you find out that each seedling of each
+vegetable needs the following amount of resources to grow.</p>
+<table>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="center">Aubergine</th>
+<th align="center">Broccoli</th>
+<th align="center">Carrot</th>
+<th align="center">Dill</th>
+<th align="center">Endive</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Land</td>
+<td align="center">60</td>
+<td align="center">30</td>
+<td align="center">20</td>
+<td align="center">10</td>
+<td align="center">20</td>
+</tr>
+<tr class="even">
+<td align="left">Water</td>
+<td align="center">0.8</td>
+<td align="center">0.2</td>
+<td align="center">0.3</td>
+<td align="center">0.1</td>
+<td align="center">0.3</td>
+</tr>
+<tr class="odd">
+<td align="left">Fertiliser</td>
+<td align="center">30</td>
+<td align="center">20</td>
+<td align="center">10</td>
+<td align="center">5</td>
+<td align="center">20</td>
+</tr>
+</tbody>
+</table>
+<p>Where land is expressed in cm of a planting line, water in litres per
+week, and fertiliser in grams per season. These values are only meant as
+an example, and do not reflect real needs of these plants.</p>
+<p>Now imagine you have prepared the land already, and you have 3,000 cm
+of planting line available, you have 50 litres of water available during
+a week, and you have bought 2,000 grams of fertiliser.</p>
+<p>You would like to decide how much to plant of each vegetable in such
+a way that your land, water, and fertiliser consumption is as close as
+possible to your available resources. You can go a bit above or below
+each amount, as you can always extend the planting lines, get additional
+water from other sources, or buy extra fertiliser, or leave any amount
+of them unused. But you would like to minimise additional work or
+expenditure, as well as avoid any waste. How can you decide, then, what
+to plant while consuming as close as possible to the available
+resources?</p>
+<p>Goal programming can help us when we have multiple restrictions
+(land, water and fertiliser in our example) from which we want to
+deviate as little as possible. To formulate our vegetable patch problem
+as a goal programming problem, we must first write our constraints,
+which we will call <em>goals</em>, as the following set of
+equations.</p>
+<p><span class="math display">\[60A + 30B + 20C + 10D + 20E =
+3000\]</span> <span class="math display">\[0.8A + 0.2B + 0.3C + 0.1D +
+0.3E = 50\]</span> <span class="math display">\[30A + 20B + 10C + 5D +
+20E = 2000\]</span></p>
+<p>Additional to the goals listed above, we assume all <em>decision
+variables</em> (A, B, C, D, E) to be non-negative. This is an implicit
+constraints that will be included in all goal programming problems in
+goalp.</p>
+<p>We are unlikely to find a solution that satisfies all goals
+perfectly, so we allow for <em>negative and positive deviations</em> in
+each goal. For a given possible solution (i.e. a set of values for the
+decision variable), the negative deviation measures by how much the
+left-hand side of the goal is lacking to reach the right-hand side. The
+positive deviation, on the other hand, measures by how much the
+left-hand side of the equation is above or in excess of the right-hand
+side. The deviations are always expressed as non-negative values.</p>
+<p>For example, if we were to plant two dozens of each vegetable,
+i.e. <span class="math inline">\(A=B=C=D=E=24\)</span>, then the left
+hand side of the “land” goal would have a value of <span class="math inline">\(60*24 + 30*24 + 20*24 + 10*24 +20*24 =
+3360\)</span>, which means our positive deviation would be equal to
+<span class="math inline">\(d_{land+}=3360-3000=360\)</span>, because we
+have an excess of 360 units on our left hand side, above our goal. On
+the other hand, if we evaluate the left-hand side of our water goal, we
+find it has a value of <span class="math inline">\(0.8*24 + 0.2*24 +
+0.3*24 + 0.1*24 + 0.3*24 = 40.8\)</span>, meaning we are lacking 9.2
+units to reach our goal, in other words <span class="math inline">\(d_{water-}=50 - 40.8 = 9.2\)</span>.</p>
+<p>Finding values for A, B, C, D, and E that keep us as close as
+possible to our goals is equivalent to minimising the sum of all
+deviations. Therefore, we just need to solve the following linear
+programming problem:</p>
+<p><span class="math display">\[Min_{A, B, C, D, E, d_{i-}, d_{i+}}
+\sum_{i\in \{ land, water, fertiliser\} } d_{i-} + d_{i+}\]</span>
+Subject to the following set of constraints: <span class="math display">\[60A + 30B + 20C + 10D + 20E + d_{land-} -
+d_{land+}= 3000\]</span> <span class="math display">\[0.8A + 0.2B + 0.3C
++ 0.1D + 0.3E + d_{water-} - d_{water+} = 50\]</span> <span class="math display">\[30A + 20B + 10C + 5D + 20E + d_{fertiliser-} -
+d_{fertiliser+}  = 2000\]</span> We can solve this problem using
+<code>goalp</code>. To do it, we simply need to follow four simply
+steps.</p>
+<ol style="list-style-type: decimal">
+<li>Load the <code>goalp</code> package if it is not loaded
+already.</li>
+<li>Write our goals in a text variable, one goal per line.</li>
+<li>Call the <code>goalp</code> function with our goals as an
+argument.</li>
+<li>Use <code>summary</code> on our results to see them on the
+screen.</li>
+</ol>
+<p>The process is exemplified in the following code snippet.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load library</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(goalp)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Write goals to a text variable</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>goals <span class="ot">&lt;-</span> <span class="st">&quot;Land :      60*A + 30*B + 20*C + 10*D + 20*E = 3000</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="st">          Water:      .8*A + .2*B + .3*C + .1*D + .3*E = 50</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="st">          Fertiliser: 30*A + 20*B + 10*C +  5*D + 20*E = 2000&quot;</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>          </span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Solve problem</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>gp <span class="ot">&lt;-</span> <span class="fu">goalp</span>(goals)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Solving underlying linear optimisation problem.</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Print results to screen</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(gp)</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Goal programming model run by tradpa using goalp 0.3.1 on R 4.2.1 for</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   Windows</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Problem formulation:</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Land : 60*A + 30*B + 20*C + 10*D + 20*E = 3000 | 1 1 | 1# 1#</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Water : 0.8*A + 0.2*B + 0.3*C + 0.1*D + 0.3*E = 50 | 1 1 | 1# 1#</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Fertiliser : 30*A + 20*B + 10*C + 5*D + 20*E = 2000 | 1 1 | 1# 1#</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Objective function value: 5</span></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Solution:</span></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   value    type</span></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; A     0 integer</span></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; B     0 integer</span></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; C   100 integer</span></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; D     0 integer</span></span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; E    50 integer</span></span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Deviations:</span></span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;            d- d+ w- w+ p- p+</span></span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Land        0  0  1  1  1  1</span></span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Water       5  0  1  1  1  1</span></span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Fertiliser  0  0  1  1  1  1</span></span></code></pre></div>
+<p>We observe that the solution is <span class="math inline">\(A=0, B=0,
+C=100, D=0, E=50\)</span>, i.e. planting 100 carrots and 50 endives. The
+summary also reports the value of the deviations, with <span class="math inline">\(d_{water-}=5\)</span>, meaning our solution wastes
+5 litres of water (i.e. it only uses 45 litres).</p>
+<p>A few things to note when using <code>goalp</code>:</p>
+<ul>
+<li>Names can be assigned to each goal, they should be written at the
+start of the line and separated from the goal by a colon.</li>
+<li>Deviations must not be included in the goals, these are added
+automatically by <code>goalp</code>.</li>
+<li>Goals must be written as regular R expressions, for example
+<code>&quot;2*x + 3*y = 10&quot;</code> is a valid goal, but
+<code>&quot;2x + 3y = 10&quot;</code> is not.</li>
+</ul>
+<p>Now imagine the fertiliser has a very long shelf life, so we do not
+care about using less of it, as we can always use whatever is left
+during the next season. In formal terms, this means that we are not
+interested in the minimising <span class="math inline">\(d_{fertiliser-}\)</span>, or alternatively, that
+our fertiliser goal can be rewritten as follows.</p>
+<p><span class="math display">\[30A + 20B + 10C + 5D + 20E &lt;=
+2000\]</span> At the same time, imagine we really enjoy working in our
+plot of land, so we do not care about having to prepare more land for
+planting. In formal terms, this means that we are not interested in
+minimising <span class="math inline">\(d_{land+}\)</span>, or
+alternatively, that our land goal can be rewritten as follows.</p>
+<p><span class="math display">\[60A + 30B + 20C + 10D + 20E &gt;=
+3000\]</span></p>
+<p>We can solve the new problem using <code>goalp</code> using the
+following code.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load library</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(goalp)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Write goals to a text variable</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>goals <span class="ot">&lt;-</span> <span class="st">&quot;Land :      60*A + 30*B + 20*C + 10*D + 20*E &gt;= 3000</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="st">          Water:      .8*A + .2*B + .3*C + .1*D + .3*E = 50</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="st">          Fertiliser: 30*A + 20*B + 10*C +  5*D + 20*E &lt;= 2000&quot;</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>          </span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Solve problem</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>gp <span class="ot">&lt;-</span> <span class="fu">goalp</span>(goals)</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Solving underlying linear optimisation problem.</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Print results to screen</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(gp)</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Goal programming model run by tradpa using goalp 0.3.1 on R 4.2.1 for</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   Windows</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Problem formulation:</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Land : 60*A + 30*B + 20*C + 10*D + 20*E &gt;= 3000 | 1 0 | 1# Inf#</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Water : 0.8*A + 0.2*B + 0.3*C + 0.1*D + 0.3*E = 50 | 1 1 | 1# 1#</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Fertiliser : 30*A + 20*B + 10*C + 5*D + 20*E &lt;= 2000 | 0 1 | Inf# 1#</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Objective function value: 0</span></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Solution:</span></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   value    type</span></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; A     0 integer</span></span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; B    25 integer</span></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; C   150 integer</span></span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; D     0 integer</span></span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; E     0 integer</span></span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Deviations:</span></span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;            d-  d+ w- w+  p-  p+</span></span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Land        0 750  1  0   1 Inf</span></span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Water       0   0  1  1   1   1</span></span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Fertiliser  0   0  0  1 Inf   1</span></span></code></pre></div>
+<p>The solution now changes, with the optimal now being planting 25
+broccoli and 150 carrots. This new solution requires preparing 750
+additional cm of land (7.5 metres) for planting, but consumes all
+available water and fertiliser.</p>
+<p>Now imagine we enjoy variety in our diet, so we would like to to
+produce at least 10 aubergines and 10 broccoli. While we like carrots,
+we do not want too many of them, so we would like to plant only between
+10 and 20. Dill, on the other hand, we definitely do not need more than
+5. We can add these ranges to the formulation of our problem.</p>
+<p>To add lower, upper and both kinds of bounds to the decision
+variables in our problem, we use the key words <code>lBound</code>,
+<code>uBound</code>, and <code>range</code> respectively. Note that
+these are hard constraints, as no deviations are allowed for them.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load library</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(goalp)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Write goals to a text variable</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>goals <span class="ot">&lt;-</span> <span class="st">&quot;Land :      60*A + 30*B + 20*C + 10*D + 20*E &gt;= 3000</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="st">          Water:      .8*A + .2*B + .3*C + .1*D + .3*E = 50</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="st">          Fertiliser: 30*A + 20*B + 10*C +  5*D + 20*E &lt;= 2000</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="st">          A lBound 10</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="st">          B lBound 10</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="st">          C range [10,20]</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="st">          D uBound 5&quot;</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>          </span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Solve problem</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>gp <span class="ot">&lt;-</span> <span class="fu">goalp</span>(goals)</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Solving underlying linear optimisation problem.</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Print results to screen</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(gp)</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Goal programming model run by tradpa using goalp 0.3.1 on R 4.2.1 for</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   Windows</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Problem formulation:</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Land : 60*A + 30*B + 20*C + 10*D + 20*E &gt;= 3000 | 1 0 | 1# Inf#</span></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Water : 0.8*A + 0.2*B + 0.3*C + 0.1*D + 0.3*E = 50 | 1 1 | 1# 1#</span></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Fertiliser : 30*A + 20*B + 10*C + 5*D + 20*E &lt;= 2000 | 0 1 | Inf# 1#</span></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; A lBound 10</span></span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; B lBound 10</span></span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; C lBound 10</span></span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; C uBound 20</span></span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; D uBound 5</span></span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Objective function value: 0</span></span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Solution:</span></span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   value    type</span></span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; A    52 integer</span></span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; B    12 integer</span></span>
+<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; C    20 integer</span></span>
+<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; D     0 integer</span></span>
+<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; E     0 integer</span></span>
+<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Deviations:</span></span>
+<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;            d-  d+ w- w+  p-  p+</span></span>
+<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Land        0 880  1  0   1 Inf</span></span>
+<span id="cb3-45"><a href="#cb3-45" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Water       0   0  1  1   1   1</span></span>
+<span id="cb3-46"><a href="#cb3-46" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Fertiliser  0   0  0  1 Inf   1</span></span>
+<span id="cb3-47"><a href="#cb3-47" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; A_lBound   NA  42 NA  0  NA Inf</span></span>
+<span id="cb3-48"><a href="#cb3-48" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; B_lBound   NA   2 NA  0  NA Inf</span></span>
+<span id="cb3-49"><a href="#cb3-49" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; C_lBound   NA  10 NA  0  NA Inf</span></span>
+<span id="cb3-50"><a href="#cb3-50" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; C_uBound    0  NA  0 NA Inf  NA</span></span>
+<span id="cb3-51"><a href="#cb3-51" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; D_uBound    5  NA  0 NA Inf  NA</span></span></code></pre></div>
+<p>The optimal solution is now planting 52 aubergines, 12 broccoli and
+20 carrots. Note that this solution satisfy all bounds imposed on the
+problem. It also implies preparing 8.80 additional metres of land for
+planting.</p>
+<p>Lower boundaries have the negative deviation <span class="math inline">\(d_{i-}\)</span> set to <code>NA</code>, while
+upper boundaries have the positive deviation <span class="math inline">\(d_{i+}\)</span> set to <code>NA</code>. This is
+because lower boundaries do not allow negative deviations, as the
+variable must be equal or bigger than the lower boundary. Similarly,
+upper bounds do not allow for positive deviations, therefore their
+values are shown as <code>NA</code>.</p>
+<p>Note that, unlike goals, names cannot be assigned to bounds.</p>
+</div>
+<div id="weighted-goal-programming" class="section level2">
+<h2>Weighted goal programming</h2>
+<p>So far, we have given the same weight to all deviations. For example,
+lacking 1 cm of land was just as bad as using one litre more or less
+than 50 litres. Very often, this is not the case. Continuing with the
+example, deviating by one litre of water is probably more important than
+deviating by 1 cm of land.</p>
+<p>To address this disparity, we can weight the deviations in the
+objective function differently for each goal. For example, we could say
+that what matters are the deviations in terms of percentage, so
+deviating by 30 cm (1% of 3000 cm) is just as important as deviating by
+0.5 litres (1% of 50 litres), or 20 grams of fertiliser (1% of 2000
+grams). To do this, we need to assign weights to each deviation. We can
+do this easily in <code>goalp</code>, as follows.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load library</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(goalp)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Write goals to a text variable</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>goals <span class="ot">&lt;-</span> <span class="st">&quot;Land :      60*A + 30*B + 20*C + 10*D + 20*E &gt;= 3000 | 1/3000</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="st">          Water:      .8*A + .2*B + .3*C + .1*D + .3*E = 50    | 1/50</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="st">          Fertiliser: 30*A + 20*B + 10*C +  5*D + 20*E &lt;= 2000 | 1/2000</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="st">          A lBound 10</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="st">          B lBound 10</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="st">          C range [10,20]</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="st">          D uBound 5&quot;</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>          </span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Solve problem</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>gp <span class="ot">&lt;-</span> <span class="fu">goalp</span>(goals)</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Solving underlying linear optimisation problem.</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Print results to screen</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(gp)</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Goal programming model run by tradpa using goalp 0.3.1 on R 4.2.1 for</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   Windows</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Problem formulation:</span></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Land : 60*A + 30*B + 20*C + 10*D + 20*E &gt;= 3000 | 0.0003333 0 | 1# Inf#</span></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Water : 0.8*A + 0.2*B + 0.3*C + 0.1*D + 0.3*E = 50 | 0.02 0.02 | 1# 1#</span></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Fertiliser : 30*A + 20*B + 10*C + 5*D + 20*E &lt;= 2000 | 0 0.0005 | Inf#</span></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   1#</span></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; A lBound 10</span></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; B lBound 10</span></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; C lBound 10</span></span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; C uBound 20</span></span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; D uBound 5</span></span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Objective function value: 0</span></span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Solution:</span></span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   value    type</span></span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; A    52 integer</span></span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; B    10 integer</span></span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; C    20 integer</span></span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; D     4 integer</span></span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; E     0 integer</span></span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Deviations:</span></span>
+<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;            d-  d+           w-    w+  p-  p+</span></span>
+<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Land        0 860 0.0003333333 0e+00   1 Inf</span></span>
+<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Water       0   0 0.0200000000 2e-02   1   1</span></span>
+<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Fertiliser 20   0 0.0000000000 5e-04 Inf   1</span></span>
+<span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; A_lBound   NA  42           NA 0e+00  NA Inf</span></span>
+<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; B_lBound   NA   0           NA 0e+00  NA Inf</span></span>
+<span id="cb4-50"><a href="#cb4-50" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; C_lBound   NA  10           NA 0e+00  NA Inf</span></span>
+<span id="cb4-51"><a href="#cb4-51" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; C_uBound    0  NA 0.0000000000    NA Inf  NA</span></span>
+<span id="cb4-52"><a href="#cb4-52" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; D_uBound    1  NA 0.0000000000    NA Inf  NA</span></span></code></pre></div>
+<p>Changing the weights of each deviation leads to a different optimal
+solution, this time the solution being 52 aubergines, 10 broccoli, 20
+carrots, and 4 dill.</p>
+<p>The printed solution shows the weight of each deviation next to the
+value of each deviation, under the columns <code>w-</code> and
+<code>w+</code> for the weights of the negative and positive deviations,
+respectively.</p>
+<p>Note that goals expressed as equalities (<code>=</code>) have weights
+different from zero for both the negative (<span class="math inline">\(d_{i-}\)</span>) and positive deviations (<span class="math inline">\(d_{i+}\)</span>). Goals expressed as “bigger than”
+inequalities (<code>&gt;=</code>) have the weight of <span class="math inline">\(d_{i+}\)</span> automatically set to zero, as
+going over the goal is not penalised. Goals expressed as “smaller than”
+inequalities (<code>&lt;=</code>) have the weight of <span class="math inline">\(d_{i-}\)</span> automatically set to zero, as
+being under the goal is not penalised.</p>
+<p>The same effect could be achieved by setting the <code>normW</code>
+options to <code>TRUE</code> when calling <code>goalp</code>,
+i.e. <code>goalp(goal, normW=TRUE)</code>. The option <code>normW</code>
+stands for “normalised weights”. It automatically defines weights as the
+inverse of the right-hand side of each goal.</p>
+<p>Note that bounds do not accept the use of weights.</p>
+<p>Now imagine that not only we want to reduce deviations from our ideal
+water usage of 50 litres, but also it is more onerous for us to exceed
+50 litres, than it is to use less than that. For example, it could be
+that additional water has to be fetched from a distant tap, so it
+requires a significant effort, while using less water is of little
+annoyance.</p>
+<p>We can take this into consideration by defining different weights for
+the negative and positive deviations for the “water” goal. We do this by
+defining two weights for the goal, <strong>first the negative deviation
+weight, followed by the weight of the positive deviation</strong>, as
+shown in the example below.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load library</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(goalp)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Write goals to a text variable</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>goals <span class="ot">&lt;-</span> <span class="st">&quot;Land :      60*A + 30*B + 20*C + 10*D + 20*E &gt;= 3000 | 1/3000</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="st">          Water:      .8*A + .2*B + .3*C + .1*D + .3*E = 50    | 1/50   10/50</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="st">          Fertiliser: 30*A + 20*B + 10*C +  5*D + 20*E &lt;= 2000 | 1/2000</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="st">          A lBound 10</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="st">          B lBound 10</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="st">          C range [10,20]</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="st">          D uBound 5&quot;</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>          </span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Solve problem</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>gp <span class="ot">&lt;-</span> <span class="fu">goalp</span>(goals)</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Solving underlying linear optimisation problem.</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Print results to screen</span></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(gp)</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Goal programming model run by tradpa using goalp 0.3.1 on R 4.2.1 for</span></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   Windows</span></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Problem formulation:</span></span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Land : 60*A + 30*B + 20*C + 10*D + 20*E &gt;= 3000 | 0.0003333 0 | 1# Inf#</span></span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Water : 0.8*A + 0.2*B + 0.3*C + 0.1*D + 0.3*E = 50 | 0.02 0.2 | 1# 1#</span></span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Fertiliser : 30*A + 20*B + 10*C + 5*D + 20*E &lt;= 2000 | 0 0.0005 | Inf#</span></span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   1#</span></span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; A lBound 10</span></span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; B lBound 10</span></span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; C lBound 10</span></span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; C uBound 20</span></span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; D uBound 5</span></span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Objective function value: 0</span></span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Solution:</span></span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   value    type</span></span>
+<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; A    52 integer</span></span>
+<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; B    10 integer</span></span>
+<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; C    20 integer</span></span>
+<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; D     4 integer</span></span>
+<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; E     0 integer</span></span>
+<span id="cb5-42"><a href="#cb5-42" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb5-43"><a href="#cb5-43" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Deviations:</span></span>
+<span id="cb5-44"><a href="#cb5-44" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;            d-  d+           w-    w+  p-  p+</span></span>
+<span id="cb5-45"><a href="#cb5-45" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Land        0 860 0.0003333333 0e+00   1 Inf</span></span>
+<span id="cb5-46"><a href="#cb5-46" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Water       0   0 0.0200000000 2e-01   1   1</span></span>
+<span id="cb5-47"><a href="#cb5-47" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Fertiliser 20   0 0.0000000000 5e-04 Inf   1</span></span>
+<span id="cb5-48"><a href="#cb5-48" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; A_lBound   NA  42           NA 0e+00  NA Inf</span></span>
+<span id="cb5-49"><a href="#cb5-49" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; B_lBound   NA   0           NA 0e+00  NA Inf</span></span>
+<span id="cb5-50"><a href="#cb5-50" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; C_lBound   NA  10           NA 0e+00  NA Inf</span></span>
+<span id="cb5-51"><a href="#cb5-51" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; C_uBound    0  NA 0.0000000000    NA Inf  NA</span></span>
+<span id="cb5-52"><a href="#cb5-52" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; D_uBound    1  NA 0.0000000000    NA Inf  NA</span></span></code></pre></div>
+<p>In this case the result does not change, as the previous solution had
+negative and positive deviations equal to zero for the water goal.
+Nevertheless, we can see that the weights reported in the
+<code>w-</code> and <code>w+</code> columns are different for the water
+goal.</p>
+<p>A more concise way to define the previous problem would have been the
+following. As we use the <code>normW=TRUE</code> option, the scaling of
+weights by the inverse of the righ-hand side value of each goal is
+automatic.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load library</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(goalp)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Write goals to a text variable</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>goals <span class="ot">&lt;-</span> <span class="st">&quot;Land :      60*A + 30*B + 20*C + 10*D + 20*E &gt;= 3000</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="st">          Water:      .8*A + .2*B + .3*C + .1*D + .3*E  = 50   | 1 10</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="st">          Fertiliser: 30*A + 20*B + 10*C +  5*D + 20*E &lt;= 2000</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="st">          A lBound 10</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="st">          B lBound 10</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="st">          C range [10,20]</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="st">          D uBound 5&quot;</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>          </span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Solve problem</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>gp <span class="ot">&lt;-</span> <span class="fu">goalp</span>(goals, <span class="at">normW=</span><span class="cn">TRUE</span>)</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Print results to screen</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(gp)</span></code></pre></div>
+</div>
+<div id="lexicographic-goal-programming" class="section level2">
+<h2>Lexicographic goal programming</h2>
+<p>Now imagine that we are more interested in using all of our available
+land, than in fulfilling our water and fertiliser goals. For example, it
+could be that all the land we do not use is assigned to other people in
+the next harvest season. When one or more goals are more important than
+others, we use lexicographic goal programming.</p>
+<p>Lexicographic goal programming requires solving the problem multiple
+times, but considering only some deviation in each occasion. The idea
+idea is that we first optimise for the most important goal (or
+deviation), we fix those deviations to the best we found, and then we
+optimise again considering only the next most important deviation, and
+so on and so forth.</p>
+<p>For example, let’s say our first priority is using at least 3000 cm
+of land, in other words, we want to minimise <span class="math inline">\(d_{land-}\)</span>, so we assign it a priority of
+1. Our next priority is avoiding to use more than 50 litres of water, so
+we assign <span class="math inline">\(d_{water+}\)</span> a priority of
+2. Then we care the same about all remaining deviations, so we assign
+priority 3 to each of them. We communicate this priority to
+<code>goalp</code> using the following syntax.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load library</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(goalp)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Write goals to a text variable</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>goals <span class="ot">&lt;-</span> <span class="st">&quot;Land :      60*A + 30*B + 20*C + 10*D + 20*E &gt;= 3000 | 1#</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="st">          Water:      .8*A + .2*B + .3*C + .1*D + .3*E = 50    | 3# 2#</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="st">          Fertiliser: 30*A + 20*B + 10*C +  5*D + 20*E &lt;= 2000 | 3#</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="st">          A lBound 10</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="st">          B lBound 10</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="st">          C range [10,20]</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="st">          D uBound 5&quot;</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>          </span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Solve problem</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>gp <span class="ot">&lt;-</span> <span class="fu">goalp</span>(goals)</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Solving for priority level 1 (1/3).</span></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Solving for priority level 2 (2/3).</span></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Solving for priority level 3 (3/3).</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Print results to screen</span></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(gp)</span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Goal programming model run by tradpa using goalp 0.3.1 on R 4.2.1 for</span></span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   Windows</span></span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Problem formulation:</span></span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Land : 60*A + 30*B + 20*C + 10*D + 20*E &gt;= 3000 | 1 0 | 1# Inf#</span></span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Water : 0.8*A + 0.2*B + 0.3*C + 0.1*D + 0.3*E = 50 | 1 1 | 3# 2#</span></span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Fertiliser : 30*A + 20*B + 10*C + 5*D + 20*E &lt;= 2000 | 0 1 | Inf# 3#</span></span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; A lBound 10</span></span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; B lBound 10</span></span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; C lBound 10</span></span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; C uBound 20</span></span>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; D uBound 5</span></span>
+<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Objective function value: 0</span></span>
+<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Solution:</span></span>
+<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   value    type</span></span>
+<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; A    52 integer</span></span>
+<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; B    12 integer</span></span>
+<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; C    20 integer</span></span>
+<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; D     0 integer</span></span>
+<span id="cb7-42"><a href="#cb7-42" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; E     0 integer</span></span>
+<span id="cb7-43"><a href="#cb7-43" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb7-44"><a href="#cb7-44" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Deviations:</span></span>
+<span id="cb7-45"><a href="#cb7-45" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;            d-  d+ w- w+  p-  p+</span></span>
+<span id="cb7-46"><a href="#cb7-46" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Land        0 880  1  0   1 Inf</span></span>
+<span id="cb7-47"><a href="#cb7-47" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Water       0   0  1  1   3   2</span></span>
+<span id="cb7-48"><a href="#cb7-48" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Fertiliser  0   0  0  1 Inf   3</span></span>
+<span id="cb7-49"><a href="#cb7-49" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; A_lBound   NA  42 NA  0  NA Inf</span></span>
+<span id="cb7-50"><a href="#cb7-50" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; B_lBound   NA   2 NA  0  NA Inf</span></span>
+<span id="cb7-51"><a href="#cb7-51" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; C_lBound   NA  10 NA  0  NA Inf</span></span>
+<span id="cb7-52"><a href="#cb7-52" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; C_uBound    0  NA  0 NA Inf  NA</span></span>
+<span id="cb7-53"><a href="#cb7-53" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; D_uBound    5  NA  0 NA Inf  NA</span></span></code></pre></div>
+<p>The solution has now changed slightly to 52 aubergines, 12 broccoli,
+and 20 carrots. As the previous solution already did not use less than
+2000 cm of land the solution was not expected to change drastically.
+When we run <code>goalp</code>, we see that three sub-problems are
+solved, one for each level of priority.</p>
+<p>Note that, unlike weights, the syntax for priority includes a hashtag
+(<code>#</code>).</p>
+<p>It is also possible to combine lexicographic priorities and weights.
+But then the weights will be relevant only within the same level of
+priority. We could, for example, obtain sligtly different results if we
+instead run <code>goalp(goals, normW=TRUE)</code>.</p>
+<p>When printing the results, the lexicographic priority of each
+deviation is shown next to its weights, in columns <code>p-</code> and
+<code>p+</code> in the table at the bottom of the summary.</p>
+</div>
+<div id="extensions" class="section level2">
+<h2>Extensions</h2>
+<p><code>goalp</code> by default assumes that all decision variables are
+integers. But they can also be defined as <em>continuous</em>
+(non-negative real numbers) or <em>binary</em> (variables that can only
+take values 0 or 1). The typre of each variable can be specified through
+the <code>varType</code> option when calling <code>goalp</code>, for
+example
+<code>goalp(goals, varType=c(x=&quot;cont&quot;, y=&quot;int&quot;, z=&quot;bin&quot;))</code>, where
+<code>x</code>, <code>y</code> and <code>z</code> are the names of the
+decision variables.</p>
+<p><code>goalp</code> allows for enforced equality constraints using the
+<code>==</code> symbol. This will turn a goal into an effective
+constraint. Note that this increases the chances of the solver not
+finding a solution for the underlying linear optimisation problem.</p>
+<p>goalp<code>also allows for enforcing of constraints by setting goal&#39;s weights equal to</code>NA<code>. If a weight is set to</code>NA`,
+then the corresponding deviation is removed from the underlying linear
+optimisation problem. This is specially useful in the case of enforcing
+inequalities. For example, to enforce <span class="math inline">\(x + y
+&gt;= 5\)</span>:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>goals <span class="ot">&lt;-</span> <span class="st">&quot;g1: 3*x + 2*y + z  = 20 </span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="st">          g2:   x +   y     &gt;= 5  | NA&quot;</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>gp <span class="ot">&lt;-</span> <span class="fu">goalp</span>(goals)</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(gp)</span></code></pre></div>
+<p>Besides the text syntax describing a goal programming problem,
+<code>goalp</code> also allows defining a problem using matrices. This
+is specially useful in the case of large problems. The problem is
+expressed in the form <code>Ax = b</code>, with the user having to
+provide the coefficient matrix <code>A</code>, with as many rows as
+goals and columns as decision variables, the vector <code>b</code>, with
+the right-hand side values of the goals, and an additional character
+vector <code>m</code> indicating if each goal relates the left- and
+right-hand sides using <code>&quot;=&quot;</code>, <code>&quot;&gt;=&quot;</code>,
+<code>&quot;&lt;=&quot;</code>, <code>&quot;==&quot;</code>, <code>&quot;lBound&quot;</code>, or
+<code>&quot;uBound&quot;</code>. Type <code>?goalp</code> in the console for more
+details.</p>
+</div>
+<div id="references" class="section level2">
+<h2>References</h2>
+<p>Ignizio, J.P (1983) Generalized goal programming: An overview.
+<em>Computers and Operations Research</em> <strong>10</strong>, 277-289.
+<a href="https://doi.org/10.1016/0305-0548(83)90003-5">doi</a></p>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
